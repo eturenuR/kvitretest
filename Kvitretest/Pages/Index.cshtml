@@ -1,0 +1,34 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Kvitre kvitre";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Kvitre kvitre</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@if (Model.IndexPageAllUsers != null)
+{
+    @foreach (var singleUser in Model.IndexPageAllUsers)
+    {
+        <div>@singleUser.ToString()</div>
+    }
+}
+else
+{
+    <div>Uff ... Feil med koden eller ingen brukere eller noe</div>
+}
+
+@if (Model.IndexPageAllPosts != null)
+{
+    @foreach (var singlePost in Model.IndexPageAllPosts)
+    {
+        <div>@singlePost.ToString()</div>
+    }
+}
+else
+{
+    <div>Uff ... Feil med koden eller ingen poster eller noe</div>
+}
