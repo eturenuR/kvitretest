@@ -43,7 +43,7 @@ internal class Program
 
         app.UseRouting();
 
-        app.UseAuthorization();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         // The manual way to do this.

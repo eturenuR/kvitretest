@@ -65,8 +65,10 @@ namespace Kvitretest.Models
                 return;
             }
 
+            // Decoded token should be the first value that was inserted into the claims list.
+            string headerToken = claimObj.Claims.First().Value;
             string headerUserIdStr = claimObj.Identity.Name ?? "";
-            int headerUserId = -1;
+            int headerUserId;
             try
             {
                 headerUserId = Int32.Parse(headerUserIdStr);
@@ -85,7 +87,7 @@ namespace Kvitretest.Models
 
             Id = headerUserId;
             //Token = claimObj.Identity.Label ?? "";  // can't be accessed ...?
-            Token = claimObj.Identity.Name ?? "";
+            Token = headerToken;
             IsAuthenticated = true;
             IsAuthorized = false;
         }
@@ -119,7 +121,7 @@ namespace Kvitretest.Models
             // 3333333333  ->  MzMzMzMzMzMzMw==
             byte[] base64EncodedBytes = [];
 
-            MyDebug.WriteLine(base64Token);
+            //MyDebug.WriteLine(base64Token);
 
             if (base64Token != null && base64Token.StartsWith("Basic "))
             {
@@ -148,13 +150,13 @@ namespace Kvitretest.Models
             return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
-        public static string ParseAuthorizationHeaders(IHeaderDictionary headers, string headerKey)
+        public static string ParseAuthenticationHeaders(IHeaderDictionary headers, string headerKey)
         {
             //string authHeaderToken = "";
 
             if (headers.TryGetValue(headerKey, out StringValues headerValues))
             {
-                string authHeaderToken = headerValues[0] ?? "";
+                string authHeaderToken = headerValues.ToString();
                 MyDebug.WriteLine(authHeaderToken);
 
                 //string possibleAuthToken = DecodeBase64Token(authHeaderToken);
@@ -201,7 +203,7 @@ namespace Kvitretest.Models
             //if (userObj == null)
             //    return AuthenticateResult.Fail("Invalid Credentials");
 
-            string base64Token = UserAuth.ParseAuthorizationHeaders(Request.Headers, "Authorization");
+            string base64Token = UserAuth.ParseAuthenticationHeaders(Request.Headers, "Authorization");
 
             return ValidateToken(base64Token);
         }

@@ -24,7 +24,9 @@ namespace Kvitretest.Controllers
         //private readonly IConfiguration Configuration;
         //private readonly IDatabaseService DataBaseService;
 
+#pragma warning disable IDE0290 // Use primary constructor
         public PostsController(
+#pragma warning restore IDE0290 // Use primary constructor
             ILogger<IndexModel> logger,
             IConfiguration configuration,
             IWebHostEnvironment webHostEnvironment) : base(
@@ -52,7 +54,7 @@ namespace Kvitretest.Controllers
             //return Enumerable.Empty<OnePost>();
             var allPosts = DatabaseService.GetAllPostsWithUsername();
 
-            return Ok(JsonSerializer.Serialize(allPosts, jsonDocumentWriteOptions));
+            return Ok(JsonSerializer.Serialize(allPosts, jsonDocumentWriteOptions));  // 200
             //return DatabaseService.GetAllPostsWithUsername();
 
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-7.0
@@ -70,7 +72,6 @@ namespace Kvitretest.Controllers
             MyDebug.WriteLine(PostId);
 
             var res = DatabaseService.GetPost(PostId);
-            //MyDebug.WriteLine(res.ToString());
 
             if (res != null)
             {
@@ -82,8 +83,8 @@ namespace Kvitretest.Controllers
                 {
                     { "message", $"finner ikke posten  – {PostId}" },
                 };
-                return NotFound(returnHash);
-                //return NoContent();
+                return NotFound(returnHash);  // 404
+                //return NoContent();  // 204
             }
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-7.0
         }
@@ -111,18 +112,18 @@ namespace Kvitretest.Controllers
             //var headers = re.Headers;
             //Console.WriteLine(headers.ToString());
 
-            int userId = -1;
-            string token = AuthorizationToken;
-            string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
+            //int userId = -1;
+            //string token = AuthorizationToken;
+            //string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
+            ////UserAuth authObj = new UserAuth(DatabaseService, decodedToken);
+            //MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | m: {4}",
+            //    userId, authObj.Id, token, decodedToken, MessageText));
 
-            //UserAuth authObj = new UserAuth(DatabaseService, decodedToken);
             UserAuth authObj = new UserAuth(HttpContext.User);
 
-            MyDebug.WriteLine(authObj.IsAuthorized.ToString());
-            MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | m: {4}",
-                userId, authObj.Id, token, decodedToken, MessageText));
+            MyDebug.WriteLine(string.Format("id: {0} | au: {1} | t f>d: {2} -> {3} | m: {4}",
+                authObj.Id, authObj.IsAuthenticated, AuthorizationToken, authObj.Token, MessageText));
 
-            userId = authObj.Id;
             if (authObj.IsAuthenticated)
             {
                 OnePost? postObj;
@@ -130,7 +131,7 @@ namespace Kvitretest.Controllers
 
                 try
                 {
-                    postObj = DatabaseService.CreatePost(userId, MessageText);
+                    postObj = DatabaseService.CreatePost(authObj.Id, MessageText);
                 }
                 catch (System.Data.DataException ex)
                 {
@@ -171,8 +172,7 @@ namespace Kvitretest.Controllers
                     };
                     //var returnJson = JsonSerializer.Serialize(returnHash, jsonDocumentWriteOptions);
 
-                    //return new CreatedResult(newRouteUrlSegmentString, returnHash);
-                    return Created(newRouteUrlSegmentString, returnHash);
+                    return Created(newRouteUrlSegmentString, returnHash);  // 201
                         //Content(returnJson,
                         //"application/json")
                         //);
@@ -183,7 +183,7 @@ namespace Kvitretest.Controllers
                         { "message", "opprette ny post feilet" },
                     };
                     // TODO: Finn en bedre feilkode å sende. 500 eller noe.
-                    return BadRequest(returnHash);
+                    return BadRequest(returnHash);  // 400
                 }
             }
             else
@@ -196,11 +196,11 @@ namespace Kvitretest.Controllers
                         { "message", "create urgh meehh" },
                 };
                 AuthenticationProperties authProps = new AuthenticationProperties(authItems);
-                return Forbid(authProps);
+                return Forbid(authProps);  // 403
 
                 //string[] authSchemeArray = { "base64" };
                 //return Forbid(authProps, authSchemeArray);
-                //return Unauthorized("Boooo!! Lag lag lag !!Boooo");
+                //return Unauthorized("Boooo!! Lag lag lag !!Boooo");  // 401
             }
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-7.0
         }
@@ -222,18 +222,18 @@ namespace Kvitretest.Controllers
             [FromRoute(Name = "PostId")] int MessageId
         )
         {
-            var userId = -1;
-            var token = AuthorizationToken;
-            string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
-
+            //var userId = -1;
+            //var token = AuthorizationToken;
+            //string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
             //UserAuth authObj = new UserAuth(DatabaseService, decodedToken);
+            //MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | pid: {4} | m: {5}",
+            //    userId, authObj.Id, token, decodedToken, MessageId, MessageText));
+
             UserAuth authObj = new UserAuth(HttpContext.User);
 
-            MyDebug.WriteLine(authObj.IsAuthorized.ToString());
-            MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | pid: {4} | m: {5}",
-                userId, authObj.Id, token, decodedToken, MessageId, MessageText));
+            MyDebug.WriteLine(string.Format("id: {0} | au: {1} | t f>d: {2} -> {3} | pid: {4} | m: {5}",
+                authObj.Id, authObj.IsAuthenticated, AuthorizationToken, authObj.Token, MessageId, MessageText));
 
-            userId = authObj.Id;
             OnePost? postToEdit = DatabaseService.GetPost(MessageId);
             Dictionary<string, string> returnHash;
 
@@ -241,7 +241,7 @@ namespace Kvitretest.Controllers
             {
                 if (authObj.CheckIsAuthorized(postToEdit.User_Id ?? "<null><¿?¿no user found¿?¿why¿?¿>"))
                 {
-                    postToEdit = DatabaseService.UpdatePost(MessageId, userId, MessageText);
+                    postToEdit = DatabaseService.UpdatePost(MessageId, authObj.Id, MessageText);
                     if (postToEdit != null)
                     {
                         string originalRouteUrlString = Request.GetDisplayUrl();
@@ -270,8 +270,8 @@ namespace Kvitretest.Controllers
                         var returnJson = JsonSerializer.Serialize(returnHash, jsonDocumentWriteOptions);
 
                         MyDebug.WriteLine(returnJson);
-                        return Ok(returnJson);
-                        //return NoContent();
+                        return Ok(returnJson);  // 200
+                        //return NoContent();  // 204
                     }
                     else
                     {
@@ -280,7 +280,7 @@ namespace Kvitretest.Controllers
                             { "wanted_post_id", MessageId.ToString() },
                         };
                         // TODO: Finn en bedre feilkode å sende. 500 eller noe.
-                        return BadRequest(returnHash);
+                        return BadRequest(returnHash);  // 400
                     }
                 }
                 else
@@ -293,9 +293,9 @@ namespace Kvitretest.Controllers
                             { "message", "edit meehh blargh edit" },
                     };
                     AuthenticationProperties authProps = new AuthenticationProperties(authItems);
-                    return Forbid(authProps);
+                    return Forbid(authProps);  // 403
 
-                    //return Unauthorized("Booohooo!! Endre endre endre");
+                    //return Unauthorized("Booohooo!! Endre endre endre");  // 401
                 }
             }
             else
@@ -304,8 +304,8 @@ namespace Kvitretest.Controllers
                 {
                     { "message", $"finner ikke posten  – {MessageId}" },
                 };
-                return NotFound(returnHash);
-                //return NoContent();
+                return NotFound(returnHash);  // 404
+                //return NoContent();  // 204
             }
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-7.0
         }
@@ -322,18 +322,18 @@ namespace Kvitretest.Controllers
             [FromRoute(Name = "PostId")] int MessageId
         )
         {
-            var userId = -1;
-            var token = AuthorizationToken;
-            string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
-
+            //var userId = -1;
+            //var token = AuthorizationToken;
+            //string decodedToken = UserAuth.DecodeBase64Token(AuthorizationToken);
             //UserAuth authObj = new UserAuth(DatabaseService, decodedToken);
+            //MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | pid: {4}",
+            //    userId, authObj.Id, token, decodedToken, MessageId));
+
             UserAuth authObj = new UserAuth(HttpContext.User);
 
-            MyDebug.WriteLine(authObj.IsAuthorized.ToString());
-            MyDebug.WriteLine(string.Format("id f>d: {0} -> {1} | t f>d: {2} -> {3} | pid: {4}",
-                userId, authObj.Id, token, decodedToken, MessageId));
+            MyDebug.WriteLine(string.Format("id: {0} | au: {1} | t f>d: {2} -> {3} | pid: {4}",
+                authObj.Id, authObj.IsAuthenticated, AuthorizationToken, authObj.Token, MessageId));
 
-            userId = authObj.Id;
             OnePost? postToDelete = DatabaseService.GetPost(MessageId);
             Dictionary<string, string> returnHash;
 
@@ -341,7 +341,7 @@ namespace Kvitretest.Controllers
             {
                 if (authObj.CheckIsAuthorized(postToDelete.User_Id ?? "<null><¿?¿no user found¿?¿why¿?¿>"))
                 {
-                    bool success = DatabaseService.DeletePost(MessageId, userId);
+                    bool success = DatabaseService.DeletePost(MessageId, authObj.Id);
                     if (success)
                     {
                         returnHash = new Dictionary<string, string>()
@@ -349,7 +349,7 @@ namespace Kvitretest.Controllers
                             { "message", "slettet" },
                             { "post_id", postToDelete.Id.ToString() },
                             { "post_user_id", (postToDelete.User_Id == null) ? "¿?¿" : postToDelete.User_Id.ToString() },
-                            { "user_id", userId.ToString() },
+                            { "user_id", authObj.Id.ToString() },
                         };
                     }
                     else
@@ -359,7 +359,7 @@ namespace Kvitretest.Controllers
                             { "message", "ikke slettet" },
                             { "post_id", postToDelete.Id.ToString() },
                             { "post_user_id", (postToDelete.User_Id == null) ? "¿?¿" : postToDelete.User_Id.ToString() },
-                            { "user_id", userId.ToString() },
+                            { "user_id", authObj.Id.ToString() },
                         };
                     }
 
@@ -367,8 +367,8 @@ namespace Kvitretest.Controllers
                     var returnJson = JsonSerializer.Serialize(returnHash, jsonDocumentWriteOptions);
 
                     MyDebug.WriteLine(returnJson);
-                    return Ok(returnJson);
-                    //return NoContent();
+                    return Ok(returnJson);  // 200
+                    //return NoContent();  // 204
                 }
                 else
                 {
@@ -380,9 +380,9 @@ namespace Kvitretest.Controllers
                             { "message", "delete blargh delete" },
                     };
                     AuthenticationProperties authProps = new AuthenticationProperties(authItems);
-                    return Forbid(authProps, "base64");
+                    return Forbid(authProps, "base64");  // 403
 
-                    //return Unauthorized("Boooohooo!! Slett slett slett");
+                    //return Unauthorized("Boooohooo!! Slett slett slett");  // 401
                 }
             }
             else
@@ -391,13 +391,13 @@ namespace Kvitretest.Controllers
                 returnHash = new Dictionary<string, string>()
                 {
                     { "message", $"kan ikke slette – finner ikke posten – {MessageId}" },
-                    { "user_id", userId.ToString() },
+                    { "user_id", authObj.Id.ToString() },
                 };
                 var returnJson = JsonSerializer.Serialize(returnHash, jsonDocumentWriteOptions);
 
                 MyDebug.WriteLine(returnJson);
-                return Ok(returnJson);
-                //return NoContent();
+                return Ok(returnJson);  // 200
+                //return NoContent();  // 204
             }
             // https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-7.0
         }
