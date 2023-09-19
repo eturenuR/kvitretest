@@ -7,6 +7,7 @@ using Kvitretest.Models;
 using Kvitretest.Pages;
 using Kvitretest.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.Primitives;
 
 namespace Kvitretest.Controllers
 {
@@ -23,6 +24,8 @@ namespace Kvitretest.Controllers
         };
         //private readonly IConfiguration Configuration;
         //private readonly IDatabaseService DataBaseService;
+
+        public static readonly string ApiRootRouteStr = "/api/v1";
 
 #pragma warning disable IDE0290 // Use primary constructor
         public PostsController(
@@ -147,20 +150,21 @@ namespace Kvitretest.Controllers
 
                 if (postObj != null)
                 {
-                    string originalRouteUrlString = Request.GetDisplayUrl();
-                    var originalRouteUri = new Uri(originalRouteUrlString);
+                    //string originalRouteUrlString = Request.GetDisplayUrl();
+                    MyDebug.WriteLine(Request.GetDisplayUrl());
 
+                    //var originalRouteUri = new Uri(originalRouteUrlString);
                     //string newRouteUrlString = string.Format("{0}://{1}:{2}{3}{4}",
                     //    originalRouteUri.Scheme,
                     //    originalRouteUri.DnsSafeHost, originalRouteUri.Port,
                     //    string.Join("", originalRouteUri.Segments, 0, (originalRouteUri.Segments.Length-1)),
                     //    postObj.Id.ToString()
                     //    );
-                    string newRouteUrlSegmentString = string.Join("", originalRouteUri.Segments,
-                        0, (originalRouteUri.Segments.Length - 1)) + postObj.Id.ToString();
+                    //string newRouteUrlSegmentString = string.Join("", originalRouteUri.Segments,
+                    //    0, (originalRouteUri.Segments.Length - 1)) + postObj.Id.ToString();
 
-                    MyDebug.WriteLine(originalRouteUrlString);
-                    //MyDebug.WriteLine(newRouteUrlString);
+                    string[] arr = [ ApiRootRouteStr, "posts", postObj.Id.ToString() ];
+                    string newRouteUrlSegmentString = string.Join('/', arr);
                     MyDebug.WriteLine(newRouteUrlSegmentString);
 
                     returnHash = new Dictionary<string, string>(){
@@ -244,25 +248,26 @@ namespace Kvitretest.Controllers
                     postToEdit = DatabaseService.UpdatePost(MessageId, authObj.Id, MessageText);
                     if (postToEdit != null)
                     {
-                        string originalRouteUrlString = Request.GetDisplayUrl();
-                        var originalRouteUri = new Uri(originalRouteUrlString);
+                        //string originalRouteUrlString = Request.GetDisplayUrl();
+                        MyDebug.WriteLine(Request.GetDisplayUrl());
 
+                        //var originalRouteUri = new Uri(originalRouteUrlString);
                         //string newRouteUrlString = string.Format("{0}://{1}:{2}{3}{4}",
                         //    originalRouteUri.Scheme,
                         //    originalRouteUri.DnsSafeHost, originalRouteUri.Port,
                         //    string.Join("", originalRouteUri.Segments, 0, (originalRouteUri.Segments.Length - 1)),
                         //    postToEdit.Id.ToString()
                         //    );
-                        string newRouteUrlSegmentString = string.Join("", originalRouteUri.Segments,
-                            0, (originalRouteUri.Segments.Length - 1)) + postToEdit.Id.ToString();
+                        //string newRouteUrlSegmentString = string.Join("", originalRouteUri.Segments,
+                        //    0, (originalRouteUri.Segments.Length - 1)) + postToEdit.Id.ToString();
 
-                        MyDebug.WriteLine(originalRouteUrlString);
-                        //MyDebug.WriteLine(newRouteUrlString);
+                        string[] arr = [ApiRootRouteStr, "posts", "edit", postToEdit.Id.ToString()];
+                        string newRouteUrlSegmentString = string.Join('/', arr);
                         MyDebug.WriteLine(newRouteUrlSegmentString);
 
                         returnHash = new Dictionary<string, string>(){
-                            { "message", "endret" },
-                            { "url", newRouteUrlSegmentString },
+                            //{ "message", "endret" },
+                            //{ "url", newRouteUrlSegmentString },
                             { "post_id", postToEdit.Id.ToString() },
                             { "post_user_id", (postToEdit.User_Id == null) ? "¿?¿" : postToEdit.User_Id.ToString() },
                             { "post_body", (postToEdit.Body == null) ? "¿?¿" : postToEdit.Body.ToString() },
@@ -347,9 +352,9 @@ namespace Kvitretest.Controllers
                         returnHash = new Dictionary<string, string>()
                         {
                             { "message", "slettet" },
-                            { "post_id", postToDelete.Id.ToString() },
-                            { "post_user_id", (postToDelete.User_Id == null) ? "¿?¿" : postToDelete.User_Id.ToString() },
-                            { "user_id", authObj.Id.ToString() },
+                            //{ "post_id", postToDelete.Id.ToString() },
+                            //{ "post_user_id", (postToDelete.User_Id == null) ? "¿?¿" : postToDelete.User_Id.ToString() },
+                            //{ "user_id", authObj.Id.ToString() },
                         };
                     }
                     else
